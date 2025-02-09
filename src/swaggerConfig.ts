@@ -4,9 +4,9 @@ const swaggerOptions: SwaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Auth API Documentation",
+      title: "API Documentation",
       version: "1.0.0",
-      description: "API documentation for the login endpoint",
+      description: "API documentation for the All endpoint",
     },
     servers: [
       {

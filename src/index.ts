@@ -14,7 +14,7 @@ app.use(express.json());
 const swaggerDocs = swaggerJsDoc(swaggerConfig);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-app.use("/api", routes); // All routes are now prefixed with /api
+app.use("/api", routes);
 
 const startServer = async () => {
   try {
