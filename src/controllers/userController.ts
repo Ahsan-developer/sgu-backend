@@ -3,12 +3,14 @@ import { getAllUsers, createUser } from "../services/userService";
 
 /**
  * @swagger
- * /users:
+ * /user/all:
  *   get:
  *     summary: Retrieve all users
- *     description: Fetch a list of all registered users.
+ *     description: Fetch a list of all registered users. Requires an API token for authentication.
  *     tags:
  *       - Users
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: A list of users.
@@ -38,8 +40,10 @@ import { getAllUsers, createUser } from "../services/userService";
  *                   createdAt:
  *                     type: string
  *                     format: date-time
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
  *       500:
- *         description: Server error
+ *         description: Server error.
  */
 export const fetchAllUsers = async (req: Request, res: Response) => {
   try {
@@ -52,7 +56,7 @@ export const fetchAllUsers = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /users/register:
+ * /user/register:
  *   post:
  *     summary: Register a new user
  *     description: Creates a new user with the provided details.

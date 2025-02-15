@@ -71,7 +71,7 @@ const UserSchema: Schema = new Schema(
       zipCode: { type: String },
     },
   },
-  { timestamps: true } // Automatically adds createdAt and updatedAt fields
+  { timestamps: true }
 );
 
 UserSchema.pre<IUser>("save", async function (next) {

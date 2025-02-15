@@ -11,40 +11,35 @@ interface CustomRequest extends Request {
   user?: CustomJwtPayload;
 }
 
-const authMiddleware = (roles: string[] = []) => {
-  return (req: CustomRequest, res: Response, next: NextFunction) => {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
+export const authenticateToken = (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  const token = req.header("Authorization")?.replace("Bearer ", "");
 
-    if (!token) {
-      return res
-        .status(401)
-        .json({ message: "No token provided, authorization denied" });
+  if (!token) {
+    res
+      .status(401)
+      .json({ message: "No token provided, authorization denied" });
+    return;
+  }
+
+  try {
+    const secret = process.env.JWT_SECRET || "sgu-market-place";
+    const decoded = jwt.verify(token, secret) as CustomJwtPayload;
+
+    // Check for token expiration
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (decoded.exp < currentTime) {
+      res.status(401).json({ message: "Token has expired" });
+      return;
     }
 
-    try {
-      const secret = process.env.JWT_SECRET || "your-default-secret";
-      const decoded = jwt.verify(token, secret) as CustomJwtPayload;
-
-      // Check for token expiration
-      const currentTime = Math.floor(Date.now() / 1000);
-      if (decoded.exp < currentTime) {
-        return res.status(401).json({ message: "Token has expired" });
-      }
-
-      // Check role
-      if (roles.length && !roles.includes(decoded.role)) {
-        return res.status(403).json({
-          message: "Access denied. You do not have the required role.",
-        });
-      }
-
-      req.user = decoded;
-      next();
-    } catch (error) {
-      console.error("Invalid token:", error);
-      return res.status(401).json({ message: "Invalid token" });
-    }
-  };
+    req.user = decoded; // Attach user data to request object
+    next(); // Proceed to the next middleware
+  } catch (error) {
+    console.error("Invalid token:", error);
+    res.status(401).json({ message: "Invalid token" });
+  }
 };
-
-export default authMiddleware;

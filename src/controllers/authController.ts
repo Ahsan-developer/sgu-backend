@@ -50,6 +50,7 @@ export const login = async (
   next: NextFunction
 ): Promise<void> => {
   const { email, password } = req.body;
+  console.log(email, "email");
 
   if (!email || !password) {
     res.status(400).json({ message: "Email and password are required" });
@@ -70,9 +71,9 @@ export const login = async (
     }
 
     const token = generateToken(user.id.toString(), user.role);
-    res.status(200).json({ token }); // Send the token response
+    res.status(200).json({ token, user });
   } catch (error) {
     console.error("Error during login:", error);
-    next(error); // Pass the error to the error-handling middleware
+    next(error);
   }
 };
