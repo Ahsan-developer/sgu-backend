@@ -63,3 +63,29 @@ export const createUser = async (userData: any) => {
     throw new Error(`Failed to create user: ${error.message}`);
   }
 };
+
+export const getUserService = async (userId: string) => {
+  return await User.findById(userId);
+};
+
+export const updateUserService = async (userId: string, userData: any) => {
+  return await User.findByIdAndUpdate(userId, userData, { new: true });
+};
+
+export const deleteUserService = async (userId: string) => {
+  const user = await User.findById(userId);
+  if (!user) return null;
+  await User.findByIdAndDelete(userId);
+  return true;
+};
+
+export const updateProfilePictureService = async (
+  userId: string,
+  imageUrl: string
+) => {
+  return await User.findByIdAndUpdate(
+    userId,
+    { profileImage: imageUrl },
+    { new: true }
+  );
+};

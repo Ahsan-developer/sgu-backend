@@ -1,5 +1,13 @@
 import { Request, Response } from "express";
-import { getAllUsers, createUser } from "../services/userService";
+import {
+  getAllUsers,
+  createUser,
+  getUserService,
+  updateUserService,
+  deleteUserService,
+  updateProfilePictureService,
+} from "../services/userService";
+import { AuthenticatedRequest } from "../types";
 
 /**
  * @swagger
@@ -7,10 +15,7 @@ import { getAllUsers, createUser } from "../services/userService";
  *   get:
  *     summary: Retrieve all users
  *     description: Fetch a list of all registered users. Requires an API token for authentication.
- *     tags:
- *       - Users
- *     security:
- *       - BearerAuth: []
+ *     tags: [User]
  *     responses:
  *       200:
  *         description: A list of users.
@@ -61,7 +66,7 @@ export const fetchAllUsers = async (req: Request, res: Response) => {
  *     summary: Register a new user
  *     description: Creates a new user with the provided details.
  *     tags:
- *       - Users
+ *       - User
  *     requestBody:
  *       required: true
  *       content:
@@ -136,5 +141,152 @@ export const registerUser = async (req: Request, res: Response) => {
       message: "Error registering user",
       error: error.message,
     });
+  }
+};
+
+/**
+ * @swagger
+ * /user/{id}:
+ *   get:
+ *     summary: Get user by ID
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User found
+ *       404:
+ *         description: User not found
+ */
+export const getUser = async (req: Request, res: Response) => {
+  try {
+    const user = await getUserService(req.params.id);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
+/**
+ * @swagger
+ * /user/update/{id}:
+ *   put:
+ *     summary: Update user details
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *       404:
+ *         description: User not found
+ */
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const updatedUser = await updateUserService(req.params.id, req.body);
+    if (!updatedUser) {
+      res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User updated successfully", updatedUser });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
+/**
+ * @swagger
+ * /user/delete/{id}:
+ *   delete:
+ *     summary: Delete a user
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       404:
+ *         description: User not found
+ */
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const deleted = await deleteUserService(req.params.id);
+    if (!deleted) {
+      res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
+/**
+ * @swagger
+ * /user/upload-profile:
+ *   post:
+ *     summary: Upload a profile picture
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               profilePicture:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Profile picture uploaded successfully
+ *       400:
+ *         description: Invalid file format or size
+ */
+export const uploadProfilePicture = async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
+  try {
+    if (!authReq.file) {
+      res.status(400).json({ message: "No file uploaded" });
+      return;
+    }
+    const userId = authReq?.user?.id ?? "";
+    const imageUrl = `/uploads/${authReq.file.filename}`;
+
+    // Update user profile with image URL
+    const updatedUser = await updateProfilePictureService(userId, imageUrl);
+    if (!updatedUser) {
+      res.status(404).json({ message: "User not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Profile picture uploaded successfully", imageUrl });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error: error });
   }
 };

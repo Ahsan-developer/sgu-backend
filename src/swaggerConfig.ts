@@ -17,6 +17,7 @@ const swaggerOptions: SwaggerOptions = {
         },
       },
     },
+    security: [{ BearerAuth: [] }],
     servers: [
       {
         url: "http://localhost:3000/api",

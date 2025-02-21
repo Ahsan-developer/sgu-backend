@@ -19,10 +19,10 @@ import { findUserByEmail } from "../services/userService";
  *             properties:
  *               email:
  *                 type: string
- *                 example: user@example.com
+ *                 example: kami@gmail.com
  *               password:
  *                 type: string
- *                 example: password123
+ *                 example: admin123456
  *     responses:
  *       200:
  *         description: Successful login

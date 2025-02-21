@@ -5,6 +5,7 @@ import routes from "./routes";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import swaggerConfig from "./swaggerConfig";
+import path from "path";
 
 dotenv.config();
 const app: Application = express();
@@ -13,7 +14,16 @@ const PORT = 3000;
 app.use(express.json());
 const swaggerDocs = swaggerJsDoc(swaggerConfig);
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocs, {
+    swaggerOptions: {
+      persistAuthorization: true, // Keeps auth token when refreshing
+    },
+  })
+);
 app.use("/api", routes);
 
 const startServer = async () => {
