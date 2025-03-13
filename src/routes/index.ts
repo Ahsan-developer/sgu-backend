@@ -7,5 +7,6 @@ const router = Router();
 router.use("/login", authRoute);
 router.use("/user", userRoutes);
 router.use("/posts", postRoute);
+router.use("/chat", postRoute);
 
 export default router;

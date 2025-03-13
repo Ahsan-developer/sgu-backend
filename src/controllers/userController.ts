@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, RequestHandler, Response } from "express";
 import {
   getAllUsers,
   createUser,
@@ -7,7 +7,7 @@ import {
   deleteUserService,
   updateProfilePictureService,
 } from "../services/userService";
-import { AuthenticatedRequest } from "../types";
+import { AuthenticatedRequest, AuthenticatedUserRequest } from "../types";
 
 /**
  * @swagger
@@ -146,7 +146,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /user/{id}:
+ * /user/me
  *   get:
  *     summary: Get user by ID
  *     tags: [User]
@@ -162,15 +162,18 @@ export const registerUser = async (req: Request, res: Response) => {
  *       404:
  *         description: User not found
  */
-export const getUser = async (req: Request, res: Response) => {
-  try {
-    const user = await getUserService(req.params.id);
-    if (!user) {
-      res.status(404).json({ message: "User not found" });
+export const getUser = async (req: AuthenticatedUserRequest, res: Response) => {
+  console.log(req?.user);
+  if (req.user) {
+    try {
+      const user = await getUserService(req?.user?.id);
+      if (!user) {
+        res.status(404).json({ message: "User not found" });
+      }
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Internal Server Error", error });
     }
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error", error });
   }
 };
 

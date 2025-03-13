@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 
 interface CustomJwtPayload {
   id: string;
-  role: string;
+  // role: string;
   exp: number; // Token expiration
 }
 
@@ -16,7 +16,9 @@ export const authenticateToken = (
   res: Response,
   next: NextFunction
 ): void => {
-  const token = req.header("Authorization")?.replace("Bearer ", "");
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  console.log(authHeader, "authHeader");
 
   if (!token) {
     res
@@ -36,8 +38,8 @@ export const authenticateToken = (
       return;
     }
 
-    req.user = decoded; // Attach user data to request object
-    next(); // Proceed to the next middleware
+    req.user = { id: decoded.id, exp: decoded.exp };
+    next();
   } catch (error) {
     console.error("Invalid token:", error);
     res.status(401).json({ message: "Invalid token" });

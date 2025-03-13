@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import {
   fetchAllUsers,
   registerUser,
@@ -14,7 +14,7 @@ const router = Router();
 
 router.get("/all", authenticateToken, fetchAllUsers);
 router.post("/register", registerUser);
-router.get("/:id", authenticateToken, getUser);
+router.get("/me", authenticateToken, getUser as any);
 router.put("/update/:id", authenticateToken, updateUser);
 router.delete("/delete/:id", authenticateToken, deleteUser);
 router.post(
