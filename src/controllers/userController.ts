@@ -278,7 +278,8 @@ export const uploadProfilePicture = async (req: Request, res: Response) => {
       return;
     }
     const userId = authReq?.user?.id ?? "";
-    const imageUrl = `/uploads/${authReq.file.filename}`;
+    const file = authReq.file as Express.MulterS3.File; // Type assertion
+    const imageUrl = file.location;
 
     // Update user profile with image URL
     const updatedUser = await updateProfilePictureService(userId, imageUrl);

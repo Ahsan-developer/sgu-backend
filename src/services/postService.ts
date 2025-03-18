@@ -44,7 +44,9 @@ export const getFilteredPosts = async (query: PostQueryParams) => {
   }
 
   // Category filter
-  if (category) filter.category = category;
+  console.log(category, "catefgory");
+
+  if (category && category != "all") filter.category = category;
 
   // Author filter
   if (author) filter.author = author;

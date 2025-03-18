@@ -41,10 +41,12 @@ export const createPost = async (req: Request, res: Response) => {
   try {
     console.log(req.body, "Form Data");
     console.log(req.file, "Uploaded Image");
+    const file = req.file as Express.MulterS3.File; // Type assertion
+    const imageUrl = file.location;
 
     const postData = {
       ...req.body,
-      image: req.file?.path, // Save the image path
+      image: imageUrl, // Save the image path
     };
 
     const post = await postService.createPost(postData);
