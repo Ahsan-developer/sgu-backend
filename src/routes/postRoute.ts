@@ -11,13 +11,13 @@ router.get("/:postId", authenticateToken, postController.getPostById);
 router.post(
   "/create",
   authenticateToken,
-  upload.single("image"),
-  postController.createPost as any
+  upload.array("images", 5),
+  postController.createPost
 );
 router.put(
   "/:postId",
   authenticateToken,
-  upload.single("image"),
+  upload.array("images", 5),
   postController.updatePost
 );
 router.delete("/:postId", authenticateToken, postController.deletePost);

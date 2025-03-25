@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPost extends Document {
   name: string;
-  image: string;
+  images: string[];
   description: string;
   category: string;
   price: number;
@@ -18,7 +18,7 @@ const PostSchema: Schema = new Schema(
   {
     name: { type: String, required: true, trim: true },
     title: { type: String, required: true, trim: true },
-    image: { type: String },
+    images: { type: [String] },
     description: { type: String, required: true },
     // content: { type: String, required: true },
     category: { type: String, required: true },

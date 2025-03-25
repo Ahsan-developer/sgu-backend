@@ -5,19 +5,22 @@ import * as postService from "../services/postService";
  * @swagger
  * /posts/create:
  *   post:
- *     summary: Create a new post
+ *     summary: Create a new post with multiple images
  *     tags: [Posts]
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               name:
  *                 type: string
- *               image:
- *                 type: string
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
  *               description:
  *                 type: string
  *               category:
@@ -37,16 +40,19 @@ import * as postService from "../services/postService";
  *       400:
  *         description: Bad request
  */
+
 export const createPost = async (req: Request, res: Response) => {
   try {
     console.log(req.body, "Form Data");
-    console.log(req.file, "Uploaded Image");
-    const file = req.file as Express.MulterS3.File; // Type assertion
-    const imageUrl = file.location;
+    console.log(req.files, "Uploaded Images");
+
+    // If multiple files were uploaded, req.files will be an array
+    const files = req.files as Express.MulterS3.File[]; // Type assertion
+    const imageUrls = files.map((file) => file.location); // Create array of image URLs
 
     const postData = {
       ...req.body,
-      image: imageUrl, // Save the image path
+      images: imageUrls, // Use 'images' field to store multiple image URLs
     };
 
     const post = await postService.createPost(postData);
@@ -265,9 +271,13 @@ export const getPostById = async (req: Request, res: Response) => {
  */
 export const updatePost = async (req: Request, res: Response) => {
   try {
+    // If multiple files were uploaded, req.files will be an array
+    const files = req.files as Express.MulterS3.File[]; // Type assertion
+    const imageUrls = files.map((file) => file.location); // Create array of image URLs
+
     const postData = {
       ...req.body,
-      image: req.file?.path, // Save the image path
+      images: imageUrls, // Use 'images' field to store multiple image URLs
     };
     const post = await postService.updatePost(req.params.postId, postData);
     post
