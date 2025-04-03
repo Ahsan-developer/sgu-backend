@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as postService from "../services/postService";
+import mongoose from "mongoose";
 
 /**
  * @swagger
@@ -312,5 +313,57 @@ export const deletePost = async (req: Request, res: Response) => {
       : res.status(404).json({ message: "Post not found" });
   } catch (error) {
     res.status(500).json({ message: error });
+  }
+};
+
+/**
+ * @swagger
+ * /api/posts/{postId}/boost:
+ *   put:
+ *     summary: Boost a post by setting its isPremium property to true.
+ *     description: If another post by the same creator is already premium, it will be set to false.
+ *     tags:
+ *       - Posts
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         description: ID of the post to be boosted
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Post boosted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Post boosted successfully"
+ *                 post:
+ *                   $ref: "#/components/schemas/Post"
+ *       400:
+ *         description: Invalid post ID
+ *       404:
+ *         description: Post not found
+ *       500:
+ *         description: Internal server error
+ */
+// Update post's isPremium property
+export const updatePremiumPost = async (req: Request, res: Response) => {
+  try {
+    console.log(req.params, "req.params>>>>>>>");
+
+    const { postId } = req.params;
+    console.log(
+      new mongoose.Types.ObjectId(postId),
+      "mongoose.Types.ObjectId>>>>>>>>>"
+    );
+    const updatedPost = await postService.boostPost(postId);
+    res.json({ message: "Post boosted successfully", post: updatedPost });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };

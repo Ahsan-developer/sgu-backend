@@ -20,6 +20,11 @@ router.put(
   upload.array("images", 5),
   postController.updatePost
 );
+router.put(
+  "/:postId/boost",
+  authenticateToken,
+  postController.updatePremiumPost
+);
 router.delete("/:postId", authenticateToken, postController.deletePost);
 
 export default router;

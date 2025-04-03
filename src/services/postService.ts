@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import PostModel, { IPost } from "../models/postModel";
 
 interface PostQueryParams {
@@ -107,4 +108,32 @@ export const updatePost = async (
 
 export const deletePost = async (postId: string): Promise<IPost | null> => {
   return await PostModel.findByIdAndDelete(postId);
+};
+
+export const boostPost = async (postId: string): Promise<IPost | null> => {
+  console.log(
+    new mongoose.Types.ObjectId(postId),
+    "mongoose.Types.ObjectId>>>>>>>>>"
+  );
+
+  const post = await PostModel.findById(postId);
+  if (!post) throw new Error("Post not found");
+
+  // Find an existing premium post by the same creator
+  const existingPremiumPost = await PostModel.findOne({
+    creatorId: post.creatorId,
+    isPremium: true,
+    _id: { $ne: postId }, // Exclude the current post
+  });
+
+  // If another premium post exists, set it to false
+  if (existingPremiumPost) {
+    await PostModel.findByIdAndUpdate(existingPremiumPost._id, {
+      isPremium: false,
+    });
+  }
+
+  // Set the requested post to premium
+  post.isPremium = true;
+  return post.save();
 };
