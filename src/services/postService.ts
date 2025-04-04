@@ -111,11 +111,6 @@ export const deletePost = async (postId: string): Promise<IPost | null> => {
 };
 
 export const boostPost = async (postId: string): Promise<IPost | null> => {
-  console.log(
-    new mongoose.Types.ObjectId(postId),
-    "mongoose.Types.ObjectId>>>>>>>>>"
-  );
-
   const post = await PostModel.findById(postId);
   if (!post) throw new Error("Post not found");
 
@@ -123,17 +118,15 @@ export const boostPost = async (postId: string): Promise<IPost | null> => {
   const existingPremiumPost = await PostModel.findOne({
     creatorId: post.creatorId,
     isPremium: true,
-    _id: { $ne: postId }, // Exclude the current post
+    _id: { $ne: post._id },
   });
 
-  // If another premium post exists, set it to false
   if (existingPremiumPost) {
     await PostModel.findByIdAndUpdate(existingPremiumPost._id, {
       isPremium: false,
     });
   }
 
-  // Set the requested post to premium
   post.isPremium = true;
   return post.save();
 };

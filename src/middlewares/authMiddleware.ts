@@ -18,8 +18,6 @@ export const authenticateToken = (
 ): void => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  console.log(authHeader, "authHeader");
-
   if (!token) {
     res
       .status(401)

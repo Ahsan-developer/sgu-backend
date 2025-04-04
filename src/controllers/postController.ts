@@ -354,13 +354,7 @@ export const deletePost = async (req: Request, res: Response) => {
 // Update post's isPremium property
 export const updatePremiumPost = async (req: Request, res: Response) => {
   try {
-    console.log(req.params, "req.params>>>>>>>");
-
     const { postId } = req.params;
-    console.log(
-      new mongoose.Types.ObjectId(postId),
-      "mongoose.Types.ObjectId>>>>>>>>>"
-    );
     const updatedPost = await postService.boostPost(postId);
     res.json({ message: "Post boosted successfully", post: updatedPost });
   } catch (error: any) {
