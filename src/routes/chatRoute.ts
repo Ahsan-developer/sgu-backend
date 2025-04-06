@@ -3,12 +3,15 @@ import {
   createChat,
   getAllChats,
   addMessageToChat,
+  getAllUserChats,
 } from "../controllers/chatController";
+import { authenticateToken } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
-router.get("/", getAllChats);
-router.post("/create", createChat);
-router.put("update/:id", addMessageToChat);
+router.get("/", authenticateToken, getAllChats);
+router.get("/user/:id", authenticateToken, getAllUserChats as any);
+router.post("/create", authenticateToken, createChat);
+router.put("update/:id", authenticateToken, addMessageToChat);
 
 export default router;

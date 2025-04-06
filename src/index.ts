@@ -7,6 +7,8 @@ import swaggerUi from "swagger-ui-express";
 import swaggerConfig from "./swaggerConfig";
 import path from "path";
 import cors from "cors";
+import http from "http";
+import { initSocketServer } from "./socket";
 
 dotenv.config();
 const app: Application = express();
@@ -30,7 +32,9 @@ app.use("/api", routes);
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, () =>
+    const server = http.createServer(app);
+    initSocketServer(server);
+    server.listen(PORT, () =>
       console.log(`Server is running on http://localhost:${PORT}`)
     );
   } catch (error) {

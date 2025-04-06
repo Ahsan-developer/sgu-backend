@@ -3,7 +3,9 @@ import {
   createChatService,
   addMessageToChatService,
   getAllChatsService,
+  getAllUserChatsService,
 } from "../services/chatService";
+import { AuthenticatedUserRequest } from "../types";
 
 /**
  * @swagger
@@ -95,5 +97,19 @@ export const getAllChats = async (_req: Request, res: Response) => {
     res.status(200).json(chats);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch chats" });
+  }
+};
+
+export const getAllUserChats = async (
+  _req: AuthenticatedUserRequest,
+  res: Response
+) => {
+  if (_req?.user?.id) {
+    try {
+      const chats = await getAllUserChatsService(_req?.user?.id);
+      res.status(200).json(chats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch chats" });
+    }
   }
 };

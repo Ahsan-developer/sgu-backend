@@ -23,3 +23,7 @@ export const addMessageToChatService = async (
 export const getAllChatsService = async () => {
   return await Chat.find().populate("messages");
 };
+
+export const getAllUserChatsService = async (id: string) => {
+  return await Chat.findById(id).populate("messages");
+};
