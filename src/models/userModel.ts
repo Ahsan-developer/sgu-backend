@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 interface IUser extends Document {
   firstName: string;
   lastName: string;
-  username: string;
+  username?: string;
   email: string;
   registrationID: string;
   password: string;
@@ -29,6 +29,14 @@ interface IUser extends Document {
     state: string;
     zipCode: string;
   };
+  stripeAccountId?: string;
+  stripeOnboardingComplete?: boolean;
+  stripeRequirementsDue?: string[];
+  hasBankAccount?: boolean;
+  identityVerified?: boolean;
+  stripeConnected?: boolean;
+  deauthorizedAt?: Date;
+  lastStripeUpdate?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,7 +45,7 @@ const UserSchema: Schema = new Schema(
   {
     // firstName: { type: String, required: true, trim: true },
     // lastName: { type: String, required: true, trim: true },
-    // username: { type: String, required: true, unique: true, trim: true },
+    username: { type: String, required: true, unique: true, trim: true },
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     registrationID: { type: String, required: true, unique: true },
@@ -71,6 +79,14 @@ const UserSchema: Schema = new Schema(
       state: { type: String },
       zipCode: { type: String },
     },
+    stripeAccountId: { type: String },
+    stripeOnboardingComplete: { type: Boolean, default: false },
+    stripeRequirementsDue: [{ type: String }],
+    hasBankAccount: { type: Boolean, default: false },
+    identityVerified: { type: Boolean, default: false },
+    stripeConnected: { type: Boolean, default: false },
+    deauthorizedAt: { type: Date },
+    lastStripeUpdate: { type: Date },
   },
   { timestamps: true }
 );

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import stripe from "../config/stripe";
 import { IPost } from "../models/postModel";
+import * as paymentService from "../services/paymentService";
 
 interface ProductType extends IPost {
   quantity?: number;
@@ -8,7 +9,7 @@ interface ProductType extends IPost {
 
 /**
  * @swagger
- * /api/payments/create-checkout-session:
+ * /payments/create-checkout-session:
  *   post:
  *     summary: Create a Stripe checkout session
  *     description: Initiates a Stripe checkout session for payment processing.
@@ -55,76 +56,44 @@ interface ProductType extends IPost {
  *         description: Internal server error.
  */
 
-export const createCheckoutSession = async (
-  req: Request,
-  res: Response
-): Promise<Response | void> => {
+export const createCheckoutSession = async (req: Request, res: Response) => {
   try {
-    const { products } = req.body;
-
-    if (!Array.isArray(products) || products.length === 0) {
-      return res.status(400).json({ error: "Products array is required" });
-    }
-
-    const lineItems = products.map((product: ProductType) => ({
-      price_data: {
-        currency: "usd",
-        product_data: { name: product.name },
-        unit_amount: Math.round(product.price * 100), // Convert to cents safely
-      },
-      quantity: product.quantity ?? 1, // Default quantity to 1
-    }));
-
-    const amount = products.reduce(
-      (total, product) => total + product.price * 100 * (product.quantity ?? 1),
-      0
+    const sessionData = await paymentService.createCheckoutSession(
+      req.body.products
     );
-    const platformFee = Math.round(amount * 0.05); // 5% Platform Fee
-    console.log(`💸 Platform Fee (Cents): ${platformFee}`);
-    const vendorIds = [...new Set(products.map((p) => p.creatorId))];
-    // Explicitly create a PaymentIntent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency: "usd",
-      metadata: {
-        vendorIds: JSON.stringify(vendorIds),
-        platformFee: platformFee,
-      },
+    res.json(sessionData);
+  } catch (error: any) {
+    console.error("Checkout error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const handleStripeWebhook = async (req: Request, res: Response) => {
+  try {
+    await paymentService.handleStripeWebhook(req, res);
+  } catch (error: any) {
+    console.error("Webhook error:", error);
+    res.status(400).send(`Webhook error: ${error.message}`);
+  }
+};
+
+export const createAccountLink = async (req: Request, res: Response) => {
+  const { stripeAccountId } = req.body;
+
+  if (!stripeAccountId) {
+    return res.status(400).json({ error: "Missing stripeAccountId" });
+  }
+
+  try {
+    const accountLink = await stripe.accountLinks.create({
+      account: stripeAccountId,
+      refresh_url: "http://192.168.8.100:3000/retry-onboarding",
+      return_url: "http://192.168.8.100:3000/onboarding-complete",
+      type: "account_onboarding",
     });
 
-    console.log(`🛒 PaymentIntent Created: ${paymentIntent.id}`);
-
-    // Create the checkout session and attach the paymentIntent
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "payment",
-      payment_intent_data: {
-        setup_future_usage: "off_session", // Save for later if needed
-      },
-      line_items: lineItems,
-      success_url: `http://192.168.8.100:3000/api/payments/success`,
-      cancel_url: `http://192.168.8.100:3000/api/payments/cancel`,
-      metadata: {
-        vendorIds: JSON.stringify(vendorIds),
-        paymentIntentId: paymentIntent.id,
-        platformFee: platformFee,
-      },
-    });
-
-    console.log(`✅ Stripe Session Created: ${session}`, session);
-    const customer = await stripe.customers.create();
-    const ephemeralKey = await stripe.ephemeralKeys.create(
-      { customer: customer.id },
-      { apiVersion: "2023-10-16" }
-    );
-    res.json({
-      sessionId: session.id,
-      paymentIntent: paymentIntent.client_secret,
-      ephemeralKey: ephemeralKey.secret,
-      customer: customer.id,
-    });
-  } catch (error) {
-    console.error("❌ Stripe Checkout Error:", error);
-    res.status(500).json({ error: (error as Error).message });
+    res.json({ url: accountLink.url });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 };

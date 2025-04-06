@@ -9,23 +9,30 @@ const seedAdminUser = async () => {
       return;
     }
 
-    // const hashedPassword = await bcrypt.hash("your-strong-password", 10);
+    const adminPassword = "admin123456";
+
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
     const adminUser = new User({
-      firstName: "Admin",
-      lastName: "User",
       username: "admin",
+      name: "Admin User",
       email: "admin@example.com",
       registrationID: "ADM-0001",
-      password: "your-strong-password",
+      password: hashedPassword,
       status: "active",
       role: "admin",
       isEmailVerified: true,
+      preferences: {
+        theme: "light",
+        notifications: true,
+      },
+      loginAttempts: 0,
     });
 
     await adminUser.save();
-    console.log("Admin user seeded successfully.");
+    console.log("✅ Admin user seeded successfully.");
   } catch (error) {
-    console.error("Error seeding admin user:", error);
+    console.error("❌ Error seeding admin user:", error);
   }
 };
 
