@@ -55,6 +55,7 @@ export const login = async (
   next: NextFunction
 ): Promise<void> => {
   const { emailOrReg, password } = req.body;
+  console.log(emailOrReg, password);
 
   if (!emailOrReg || !password) {
     res

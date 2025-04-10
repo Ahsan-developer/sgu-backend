@@ -1,66 +1,33 @@
-import Chat from "../models/chatModel";
-import Message from "../models/messageModel";
-import { IUser } from "../models/userModel";
-import { IMessage } from "../types";
+import { Chat } from "../models/chatModel";
+import { Message } from "../models/messageModel";
+import { Types } from "mongoose";
 
-// Service to create a new chat
-export const createChatService = async (participants: string[]) => {
-  return await Chat.create({ participants, messages: [] });
-};
+export const ChatService = {
+  async createChat(participantIds: Types.ObjectId[]) {
+    return await Chat.create({ participants: participantIds });
+  },
 
-export const addMessageToChatService = async (
-  chatId: string,
-  participant_id: string,
-  message: string
-) => {
-  const newMessage = await Message.create({ participant_id, message });
-  return await Chat.findByIdAndUpdate(
-    chatId,
-    { $push: { messages: newMessage._id } },
-    { new: true }
-  ).populate("messages");
-};
+  async getChatsByUser(userId: string) {
+    return await Chat.find({ participants: userId })
+      .populate("participants")
+      .sort({ updatedAt: -1 });
+  },
 
-// Service to get all chats
-export const getAllChatsService = async () => {
-  return await Chat.find().populate("messages");
-};
+  async sendMessage(chatId: string, senderId: string, content: string) {
+    return await Message.create({
+      chat: new Types.ObjectId(chatId),
+      sender: new Types.ObjectId(senderId),
+      content,
+    });
+  },
 
-export const getAllUserChatsService = async (userId: string) => {
-  const chats = await Chat.find({ participants: userId })
-    .populate<{ participants: IUser[] }>({
-      // <-- Explicitly type populate
-      path: "participants",
-      select: "_id name profileImage",
-    })
-    .populate<{ messages: IMessage[] }>({
-      path: "messages",
-      options: { sort: { timestamp: -1 }, limit: 1 },
-    })
-    .lean();
+  async getMessagesByChat(chatId: string) {
+    return await Message.find({ chat: chatId })
+      .populate("sender", "name") // customize as needed
+      .sort({ createdAt: 1 });
+  },
 
-  const formattedChats = chats.map((chat) => {
-    // Safely find the other participant (exclude current user)
-    const otherParticipant = chat.participants.find(
-      (participant) => participant._id.toString() !== userId
-    );
-
-    // Last message (if exists)
-    const lastMessage = chat.messages?.[0] || null;
-
-    return {
-      chatId: chat._id,
-      otherParticipant: otherParticipant
-        ? {
-            _id: otherParticipant._id,
-            name: otherParticipant.name,
-            profileImage: otherParticipant.profileImage,
-          }
-        : null, // Handle case where participant isn't found
-      lastMessage,
-      updatedAt: chat.updatedAt,
-    };
-  });
-
-  return formattedChats;
+  async getChatById(chatId: string) {
+    return await Chat.findById(chatId).populate("participants");
+  },
 };

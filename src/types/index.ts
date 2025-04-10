@@ -1,9 +1,10 @@
+import { Request } from "express";
 export interface AuthenticatedRequest extends Request {
   user?: { id: string };
   file?: Express.Multer.File;
 }
 export interface AuthenticatedUserRequest extends Request {
-  user?: { id: string };
+  user: { id: string; exp: string };
 }
 export interface IMessage extends Document {
   participant_id: string;

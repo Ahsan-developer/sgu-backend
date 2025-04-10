@@ -1,17 +1,13 @@
-import express from "express";
-import {
-  createChat,
-  getAllChats,
-  addMessageToChat,
-  getAllUserChats,
-} from "../controllers/chatController";
+import { Router } from "express";
+import { ChatController } from "../controllers/chatController";
 import { authenticateToken } from "../middlewares/authMiddleware";
 
-const router = express.Router();
+const router = Router();
 
-router.get("/", authenticateToken, getAllChats);
-router.get("/user", authenticateToken, getAllUserChats as any);
-router.post("/create", authenticateToken, createChat);
-router.put("update/:id", authenticateToken, addMessageToChat);
+router.post("/create", authenticateToken, ChatController.createChat);
+router.get("/all", authenticateToken, ChatController.getChat);
+router.get("/:chatId", authenticateToken, ChatController.getChat);
+router.post("/:chatId/message", authenticateToken, ChatController.sendMessage);
+router.get("/:chatId/messages", authenticateToken, ChatController.getMessages);
 
 export default router;
