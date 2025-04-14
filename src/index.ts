@@ -13,11 +13,13 @@ import path from "path";
 import cors from "cors";
 import http from "http";
 import { initSocketServer } from "./socket";
+import webhookRoutes from "./routes/webhookRoutes";
 
 dotenv.config();
 const app: Application = express();
 const PORT = 3000;
 
+app.use("/webhook", webhookRoutes);
 app.use(express.json());
 const swaggerDocs = swaggerJsDoc(swaggerConfig);
 app.use(cors());
