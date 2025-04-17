@@ -134,7 +134,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const user = await createUser(req.body);
     res.status(201).json({
       message: "User registered successfully",
-      data: user,
+      user,
     });
   } catch (error: any) {
     res.status(400).json({

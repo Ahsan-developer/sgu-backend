@@ -51,9 +51,25 @@ export const createPost = async (req: Request, res: Response) => {
     const files = req.files as Express.MulterS3.File[]; // Type assertion
     const imageUrls = files.map((file) => file.location); // Create array of image URLs
 
+    const parsedPreferences = req.body.roommatePreferences
+      ? JSON.parse(req.body.roommatePreferences)
+      : undefined;
+
+    if (parsedPreferences) {
+      if (parsedPreferences.age) {
+        parsedPreferences.age = Number(parsedPreferences.age);
+      }
+      if (parsedPreferences.availabilityDate) {
+        parsedPreferences.availabilityDate = new Date(
+          parsedPreferences.availabilityDate
+        );
+      }
+    }
+
     const postData = {
       ...req.body,
-      images: imageUrls, // Use 'images' field to store multiple image URLs
+      images: imageUrls,
+      roommatePreferences: parsedPreferences,
     };
 
     const post = await postService.createPost(postData);

@@ -29,8 +29,8 @@ export const createCheckoutSession = async (products: any[]) => {
     payment_method_types: ["card"],
     mode: "payment",
     line_items: lineItems,
-    success_url: `http://3.27.190.88:3000/success`,
-    cancel_url: `http://3.27.190.88:3000/cancel`,
+    success_url: `${process.env.SERVER_BASE_URL}/success`,
+    cancel_url: `${process.env.SERVER_BASE_URL}/cancel`,
     metadata: {
       vendorProductInfo: JSON.stringify(vendorProductInfo),
     },
