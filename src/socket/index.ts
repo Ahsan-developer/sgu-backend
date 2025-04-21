@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import http from "http";
 import { registerSocketHandlers } from "./handlers";
+import { initializeSocketEmitter } from "./socketEmitter";
 
 const connectedUsers = new Map<string, any>();
 
@@ -19,7 +20,9 @@ export const initSocketServer = (server: http.Server) => {
       connectedUsers.set(userId, socket.id);
       console.log(`User ${userId} registered with socket ${socket.id}`);
     });
-
+    socket.emit("test", "testing");
+    // Initialize the emitter
+    initializeSocketEmitter(io);
     registerSocketHandlers(socket, io, connectedUsers);
 
     socket.on("disconnect", () => {

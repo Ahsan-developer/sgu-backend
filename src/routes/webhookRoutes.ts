@@ -3,6 +3,7 @@ import stripe from "../config/stripe";
 import Stripe from "stripe";
 import express from "express";
 import User from "../models/userModel";
+import { emitToUser } from "../socket/socketEmitter";
 
 const router = express.Router();
 
@@ -46,6 +47,9 @@ router.post(
           await handleIdentityVerified(event.data.object);
           break;
 
+        case "account.application.deauthorized":
+          await handleAccountDeauthorized(event.data.object);
+          break;
         case "account.application.deauthorized":
           await handleAccountDeauthorized(event.data.object);
           break;
@@ -104,7 +108,7 @@ async function handleAccountUpdated(account: Stripe.Account) {
   const currentlyDue = account.requirements?.currently_due || [];
 
   // Update user in database
-  await User.findOneAndUpdate(
+  const user = await User.findOneAndUpdate(
     { stripeAccountId: account.id },
     {
       stripeOnboardingComplete: isOnboardingComplete,
@@ -113,6 +117,7 @@ async function handleAccountUpdated(account: Stripe.Account) {
     }
   );
 
+  emitToUser(user?._id, "receive_broadcast");
   if (isOnboardingComplete) {
     console.log(`🎉 Onboarding complete for account: ${account.id}`);
     await sendOnboardingCompleteNotification(account.id);

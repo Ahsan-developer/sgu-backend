@@ -8,6 +8,7 @@ import {
   updateProfilePictureService,
 } from "../services/userService";
 import { AuthenticatedRequest, AuthenticatedUserRequest } from "../types";
+import { generateToken } from "../services/authService";
 
 /**
  * @swagger
@@ -132,9 +133,11 @@ export const fetchAllUsers = async (req: Request, res: Response) => {
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const user = await createUser(req.body);
+    const token = generateToken(user.id.toString(), "user");
     res.status(201).json({
       message: "User registered successfully",
       user,
+      token,
     });
   } catch (error: any) {
     res.status(400).json({

@@ -40,7 +40,7 @@ export const getFilteredPosts = async (query: PostQueryParams) => {
   if (search) {
     filter.$or = [
       { title: new RegExp(search, "i") },
-      { content: new RegExp(search, "i") },
+      { description: new RegExp(search, "i") },
     ];
   }
 
